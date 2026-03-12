@@ -1,7 +1,5 @@
 package com.company.fingpay.FingPay.dto;
 
-
-
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
@@ -22,8 +20,8 @@ public class CaptureResponse {
 
     private String qScore;
 
-    private String dpID;
-    private String rdsID;
+    private String dpId;
+    private String rdsId;
     private String rdsVer;
 
     private String dc;
@@ -38,6 +36,7 @@ public class CaptureResponse {
     @NotBlank(message = "HMAC is required")
     private String hmac;
 
+    @NotBlank(message = "PID datatype is required")
     private String pidDatatype;
 
     @NotBlank(message = "PID data is required")

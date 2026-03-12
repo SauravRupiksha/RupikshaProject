@@ -1,7 +1,5 @@
 package com.company.fingpay.FingPay.dto;
 
-
-
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 

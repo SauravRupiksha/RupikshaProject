@@ -1,12 +1,11 @@
 package com.company.fingpay.FingPay.repository;
 
 
-
-
 import com.company.fingpay.FingPay.entity.AepsTransaction;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,6 +20,16 @@ public interface AepsTransactionRepository
     List<AepsTransaction> findByRetryCountLessThan(Integer retryCount);
 
     List<AepsTransaction> findByStatusAndRetryCountLessThan(
+            String status,
+            Integer retryCount
+    );
+
+    List<AepsTransaction> findByCreatedAtBetween(
+            LocalDateTime start,
+            LocalDateTime end
+    );
+
+    List<AepsTransaction> findTop50ByStatusAndRetryCountLessThanOrderByCreatedAtAsc(
             String status,
             Integer retryCount
     );

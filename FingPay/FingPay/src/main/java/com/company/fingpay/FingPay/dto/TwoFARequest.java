@@ -1,9 +1,9 @@
 package com.company.fingpay.FingPay.dto;
 
-
-
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
@@ -16,6 +16,7 @@ public class TwoFARequest {
     private String merchantUserName;
 
     @NotBlank(message = "Merchant PIN is required")
+    @Size(min = 4, max = 6, message = "Merchant PIN must be between 4 and 6 characters")
     private String merchantPin;
 
     @NotBlank(message = "Transaction type is required")
@@ -34,6 +35,7 @@ public class TwoFARequest {
     private String serviceType;
 
     @NotBlank(message = "Mobile number is required")
+    @Pattern(regexp = "^[6-9][0-9]{9}$", message = "Invalid mobile number")
     private String mobileNumber;
 
     private String requestRemarks;

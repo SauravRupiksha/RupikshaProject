@@ -1,9 +1,8 @@
 package com.company.fingpay.FingPay.dto;
 
-
-
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 
 @Data
@@ -13,6 +12,7 @@ public class MiniStatementRequest {
     private CardNumberOrUID cardNumberOrUID;
 
     @NotBlank(message = "Mobile number is required")
+    @Pattern(regexp = "^[6-9][0-9]{9}$", message = "Invalid mobile number")
     private String mobileNumber;
 
     @NotBlank(message = "Payment type is required")
@@ -48,5 +48,4 @@ public class MiniStatementRequest {
 
     @NotBlank(message = "Merchant PIN is required")
     private String merchantPin;
-
 }

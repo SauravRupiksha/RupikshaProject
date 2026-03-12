@@ -1,9 +1,9 @@
 package com.company.fingpay.FingPay.dto;
 
-
-
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -15,6 +15,7 @@ public class CashDepositRequest {
     private CardNumberOrUID cardNumberOrUID;
 
     @NotBlank(message = "Mobile number is required")
+    @Pattern(regexp = "^[6-9][0-9]{9}$", message = "Invalid mobile number")
     private String mobileNumber;
 
     @NotBlank(message = "Payment type is required")
@@ -47,6 +48,7 @@ public class CashDepositRequest {
     private String languageCode;
 
     @NotNull(message = "Transaction amount is required")
+    @DecimalMin(value = "1.0", message = "Transaction amount must be greater than 0")
     private BigDecimal transactionAmount;
 
     @NotBlank(message = "Merchant transaction ID is required")

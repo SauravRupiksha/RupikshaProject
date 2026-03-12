@@ -1,24 +1,25 @@
 package com.company.fingpay.FingPay.util;
 
-
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.Base64;
+import java.util.Objects;
 
 public final class HashUtil {
 
     private static final String SHA256 = "SHA-256";
 
-    private HashUtil() {
-        // prevent object creation
-    }
+    private HashUtil() {}
 
     /* -------------------------------
         GENERATE SHA256 HASH
     -------------------------------- */
 
-    public static String generateHash(String data) throws Exception {
-        return sha256(data);
+    public static String generateHash(String data) {
+
+        Objects.requireNonNull(data, "Hash data cannot be null");
+
+        return sha256(data.trim());
     }
 
     /* -------------------------------
@@ -28,9 +29,12 @@ public final class HashUtil {
 
     public static String generateStatusHash(
             String tranId,
-            String md5Password) throws Exception {
+            String md5Password) {
 
-        String data = tranId + "+" + md5Password;
+        Objects.requireNonNull(tranId);
+        Objects.requireNonNull(md5Password);
+
+        String data = tranId.trim() + "+" + md5Password.trim();
 
         return sha256(data);
     }
@@ -43,10 +47,14 @@ public final class HashUtil {
     public static String generateReconHash(
             String merchantLoginId,
             String fromDate,
-            String toDate) throws Exception {
+            String toDate) {
 
         String data =
-                merchantLoginId + "+" + fromDate + "+" + toDate;
+                merchantLoginId.trim() +
+                        "+" +
+                        fromDate.trim() +
+                        "+" +
+                        toDate.trim();
 
         return sha256(data);
     }
@@ -55,18 +63,25 @@ public final class HashUtil {
         CORE SHA256 METHOD
     -------------------------------- */
 
-    private static String sha256(String data) throws Exception {
+    private static String sha256(String data) {
 
-        MessageDigest digest =
-                MessageDigest.getInstance(SHA256);
+        try {
 
-        byte[] hash =
-                digest.digest(
-                        data.getBytes(StandardCharsets.UTF_8)
-                );
+            MessageDigest digest =
+                    MessageDigest.getInstance(SHA256);
 
-        return Base64.getEncoder()
-                .encodeToString(hash);
+            byte[] hash =
+                    digest.digest(
+                            data.getBytes(StandardCharsets.UTF_8)
+                    );
+
+            return Base64.getEncoder()
+                    .encodeToString(hash);
+
+        } catch (Exception e) {
+
+            throw new RuntimeException(
+                    "Hash generation failed", e);
+        }
     }
-
 }

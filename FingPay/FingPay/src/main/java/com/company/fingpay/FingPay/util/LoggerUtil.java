@@ -5,16 +5,21 @@ import org.slf4j.LoggerFactory;
 
 public final class LoggerUtil {
 
-    // Global logger (optional)
-    public static final Logger logger =
-            LoggerFactory.getLogger("AEPS");
+    private LoggerUtil() {}
 
-    private LoggerUtil() {
-        // prevent object creation
-    }
+    /* -------------------------------
+        CLASS BASED LOGGER
+    -------------------------------- */
 
     public static Logger getLogger(Class<?> clazz) {
         return LoggerFactory.getLogger(clazz);
     }
 
+    /* -------------------------------
+        GLOBAL AEPS LOGGER
+    -------------------------------- */
+
+    public static Logger getAepsLogger() {
+        return LoggerFactory.getLogger("AEPS");
+    }
 }

@@ -1,41 +1,52 @@
 package com.company.fingpay.FingPay.dto;
 
-
-
-
-
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 
 @Data
 public class BalanceEnquiryRequest {
 
-    private CardNumberOrUID cardnumberORUID;
+    @NotNull(message = "CardNumberOrUID is required")
+    private CardNumberOrUID cardNumberOrUID;
 
+    @NotBlank(message = "Mobile number is required")
+    @Pattern(regexp = "^[6-9][0-9]{9}$", message = "Invalid mobile number")
     private String mobileNumber;
 
+    @NotBlank(message = "Payment type is required")
     private String paymentType;
 
+    @NotBlank(message = "Timestamp is required")
     private String timestamp;
 
+    @NotBlank(message = "Transaction type is required")
     private String transactionType;
 
-    private double latitude;
+    @NotNull(message = "Latitude is required")
+    private Double latitude;
 
-    private double longitude;
+    @NotNull(message = "Longitude is required")
+    private Double longitude;
 
     private String requestRemarks;
 
+    @NotBlank(message = "Device transaction ID is required")
     private String deviceTransactionId;
 
+    @NotNull(message = "Capture response is required")
     private CaptureResponse captureResponse;
 
     private String languageCode;
 
+    @NotBlank(message = "Merchant transaction ID is required")
     private String merchantTransactionId;
 
+    @NotBlank(message = "Merchant username is required")
     private String merchantUserName;
 
+    @NotBlank(message = "Merchant PIN is required")
     private String merchantPin;
 
 }
-

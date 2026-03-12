@@ -1,6 +1,8 @@
-
 package com.company.fingpay.FingPay.util;
+
 import jakarta.annotation.PostConstruct;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -15,13 +17,16 @@ import java.util.Base64;
 @Component
 public class RsaUtil {
 
+    private static final Logger logger =
+            LoggerFactory.getLogger(RsaUtil.class);
+
     private static final String CERT_TYPE = "X.509";
     private static final String RSA_TRANSFORMATION = "RSA/ECB/PKCS1Padding";
 
     @Value("${fingpay.public.cert}")
     private String certificate;
 
-    private static PublicKey publicKey;
+    private PublicKey publicKey;
 
     /* -------------------------------
         LOAD CERTIFICATE
@@ -32,11 +37,16 @@ public class RsaUtil {
 
         try {
 
-            // format certificate properly
-            String formattedCert =
-                    "-----BEGIN CERTIFICATE-----\n" +
-                            certificate +
-                            "\n-----END CERTIFICATE-----";
+            logger.info("Loading Fingpay public certificate");
+
+            String formattedCert = certificate;
+
+            if(!certificate.contains("BEGIN CERTIFICATE")){
+                formattedCert =
+                        "-----BEGIN CERTIFICATE-----\n" +
+                                certificate +
+                                "\n-----END CERTIFICATE-----";
+            }
 
             CertificateFactory factory =
                     CertificateFactory.getInstance(CERT_TYPE);
@@ -51,7 +61,11 @@ public class RsaUtil {
 
             publicKey = cert.getPublicKey();
 
+            logger.info("Fingpay certificate loaded successfully");
+
         } catch (Exception e) {
+
+            logger.error("Failed to load Fingpay certificate", e);
 
             throw new RuntimeException(
                     "Failed to load Fingpay public certificate",
@@ -64,7 +78,7 @@ public class RsaUtil {
         RSA ENCRYPT SESSION KEY
     -------------------------------- */
 
-    public static String encrypt(String sessionKey) throws Exception {
+    public String encrypt(String sessionKey) throws Exception {
 
         Cipher cipher =
                 Cipher.getInstance(RSA_TRANSFORMATION);

@@ -5,6 +5,7 @@ import com.company.fingpay.FingPay.entity.AepsTransaction;
 import com.company.fingpay.FingPay.repository.AepsTransactionRepository;
 import com.company.fingpay.FingPay.util.HashUtil;
 import com.company.fingpay.FingPay.util.LoggerUtil;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.apache.commons.codec.digest.DigestUtils;
@@ -25,6 +26,7 @@ import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class AepsService {
@@ -84,7 +86,7 @@ public class AepsService {
 
     private String callApi(String endpoint, String json) throws Exception {
 
-        logger.info("AEPS Request : {}", json);
+        logger.info("AEPS Request");
 
         Map<String,String> enc =
                 encryptionService.encryptRequest(json);
@@ -114,21 +116,22 @@ public class AepsService {
                             String.class
                     );
 
-            logger.info("AEPS Response : {}", response);
+            logger.info("AEPS Response received");
 
             return response;
 
         } catch(HttpClientErrorException e){
 
             logger.error("HTTP Error {}", e.getStatusCode());
-            return "HTTP ERROR : " + e.getStatusCode();
+            throw new RuntimeException("HTTP Error : " + e.getStatusCode());
 
         } catch(ResourceAccessException e){
 
             logger.error("Network Error {}", e.getMessage());
-            return "NETWORK ERROR";
+            throw new RuntimeException("Network Error");
         }
     }
+
 
     /* -----------------------------------
             CASH WITHDRAWAL
@@ -137,18 +140,35 @@ public class AepsService {
     public String cashWithdrawal(CashWithdrawalRequest request)
             throws Exception {
 
+        Optional<AepsTransaction> existing =
+                transactionRepository
+                        .findByMerchantTranId(
+                                request.getMerchantTranId());
+
+        if(existing.isPresent()){
+            throw new RuntimeException(
+                    "Duplicate transaction id");
+        }
+
         String json =
                 objectMapper.writeValueAsString(request);
 
-        saveTransaction(
-                request.getMerchantTranId(),
-                request.getTransactionAmount(),
-                "CW",
-                "PENDING"
-        );
+        AepsTransaction txn =
+                saveTransaction(
+                        request.getMerchantTranId(),
+                        request.getTransactionAmount(),
+                        "CW",
+                        "PENDING"
+                );
 
-        return callApi(cashWithdrawalUrl, json);
+        String response =
+                callApi(cashWithdrawalUrl, json);
+
+        updateTransaction(txn, response);
+
+        return response;
     }
+
 
     /* -----------------------------------
             BALANCE ENQUIRY
@@ -163,6 +183,7 @@ public class AepsService {
         return callApi(balanceEnquiryUrl, json);
     }
 
+
     /* -----------------------------------
             MINI STATEMENT
     ------------------------------------ */
@@ -175,6 +196,7 @@ public class AepsService {
 
         return callApi(miniStatementUrl, json);
     }
+
 
     /* -----------------------------------
             AADHAAR PAY
@@ -189,6 +211,7 @@ public class AepsService {
         return callApi(aadhaarPayUrl, json);
     }
 
+
     /* -----------------------------------
             CASH DEPOSIT
     ------------------------------------ */
@@ -202,6 +225,7 @@ public class AepsService {
         return callApi(cashDepositUrl, json);
     }
 
+
     /* -----------------------------------
             2FA AUTH
     ------------------------------------ */
@@ -214,6 +238,7 @@ public class AepsService {
 
         return callApi(twoFaUrl, json);
     }
+
 
     /* -----------------------------------
             STATUS CHECK
@@ -251,6 +276,7 @@ public class AepsService {
         );
     }
 
+
     /* -----------------------------------
             THREE WAY RECON
     ------------------------------------ */
@@ -285,11 +311,12 @@ public class AepsService {
         );
     }
 
+
     /* -----------------------------------
             SAVE TRANSACTION
     ------------------------------------ */
 
-    public void saveTransaction(
+    private AepsTransaction saveTransaction(
             String merchantTranId,
             BigDecimal amount,
             String type,
@@ -303,6 +330,32 @@ public class AepsService {
         txn.setStatus(status);
         txn.setRetryCount(0);
         txn.setCreatedAt(LocalDateTime.now());
+        txn.setUpdatedAt(LocalDateTime.now());
+
+        return transactionRepository.save(txn);
+    }
+
+
+    /* -----------------------------------
+            UPDATE TRANSACTION
+    ------------------------------------ */
+
+    private void updateTransaction(
+            AepsTransaction txn,
+            String response) throws Exception {
+
+        JsonNode node =
+                objectMapper.readTree(response);
+
+        txn.setStatus(
+                node.path("status").asText("FAILED"));
+
+        txn.setResponseCode(
+                node.path("responseCode").asText());
+
+        txn.setResponseMessage(
+                node.path("message").asText());
+
         txn.setUpdatedAt(LocalDateTime.now());
 
         transactionRepository.save(txn);
