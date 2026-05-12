@@ -1,0 +1,70 @@
+public class AESEncryption {
+
+    private static void deriveKeyAndIV(String passphrase, byte[] salt, byte[] key, byte[] iv) throws NoSuchAlgorithmException, UnsupportedEncodingException {
+        MessageDigest md5 = MessageDigest.getInstance("MD5");
+        byte[] concatenatedHashes = new byte[48];
+
+        byte[] passwordBytes = passphrase.getBytes("UTF-8");
+        byte[] currentHash = new byte[0];
+        boolean enoughBytesForKey = false;
+        int totalLength = 0;
+
+        while (!enoughBytesForKey) {
+            md5.update(currentHash);
+            md5.update(passwordBytes);
+            md5.update(salt);
+            currentHash = md5.digest();
+
+            int remainingBytes = concatenatedHashes.length - totalLength;
+            int copyLength = Math.min(currentHash.length, remainingBytes);
+            System.arraycopy(currentHash, 0, concatenatedHashes, totalLength, copyLength);
+            totalLength += copyLength;
+
+            if (totalLength >= concatenatedHashes.length) {
+                enoughBytesForKey = true;
+            }
+        }
+
+        System.arraycopy(concatenatedHashes, 0, key, 0, 32);
+        System.arraycopy(concatenatedHashes, 32, iv, 0, 16);
+    }
+
+    public static byte[] encryptStringToBytesAes(String plainText, byte[] key, byte[] iv) throws Exception {
+        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        SecretKeySpec keySpec = new SecretKeySpec(key, "AES");
+        IvParameterSpec ivSpec = new IvParameterSpec(iv);
+        cipher.init(Cipher.ENCRYPT_MODE, keySpec, ivSpec);
+
+        return cipher.doFinal(plainText.getBytes("UTF-8"));
+    }
+
+    public static String openSSLEncrypt(String plainText, String passphrase) throws Exception {
+        byte[] salt = new byte[8];
+        SecureRandom secureRandom = new SecureRandom();
+        secureRandom.nextBytes(salt);
+
+        byte[] key = new byte[32];
+        byte[] iv = new byte[16];
+        deriveKeyAndIV(passphrase, salt, key, iv);
+
+        byte[] encryptedBytes = encryptStringToBytesAes(plainText, key, iv);
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        outputStream.write("Salted__".getBytes("ASCII"));
+        outputStream.write(salt);
+        outputStream.write(encryptedBytes);
+
+        return Base64.getEncoder().encodeToString(outputStream.toByteArray());
+    }
+
+    public static void main(String[] args) {
+        try {
+            String plainText = "Hello, World!";
+            String passphrase = "password";
+            String encrypted = openSSLEncrypt(plainText, passphrase);
+            System.out.println("Encrypted: " + encrypted);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
