@@ -1,0 +1,7 @@
+JARCOMMAND***********************
+.\mvnw.cmd clean package -DskipTests
+pkill java
+rm ajay-0.0.1-SNAPSHOT.jar
+pkill java
+rm ajay-0.0.1-SNAPSHOT.jar
+nohup java -jar ajay-0.0.1-SNAPSHOT.jar &

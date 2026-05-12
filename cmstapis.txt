@@ -1,0 +1,40 @@
+ scp -i "C:\Users\asus\Downloads\AEP.pem" "C:\Users\asus\Downloads\cms\cms\target\cms-0.0.1-SNAPSHOT.jar" ubuntu@13.233.206.88:/home/ubuntu
+ ssh -i "C:\Users\asus\Downloads\AEP.pem" ubuntu@13.233.206.88
+ nohup java -jar cms-0.0.1-SNAPSHOT.jar  > app.log 2>&1 &
+ mysql -h database-2.cd2eyywiufeo.ap-south-1.rds.amazonaws.com -u admin -p
+
+
+curl -X POST "http://13.233.206.88:8080/api/levin/c3/transaction" \
+-H "Content-Type: application/json" \
+-d '{
+"mobile_number":"9102102871",
+"aeps_agent_id":"AGENT123",
+"aeps_agent_pin":"1234",
+"latitude":"25.5941",
+"longitude":"85.1376"
+}'
+
+http://13.233.206.88:8080/api/levin/cms/callback
+
+
+curl -X POST "http://13.233.206.88:8080/api/levin/cms/callback" \
+-H "Content-Type: application/json" \
+-d '{
+"status_id":"1",
+"txnid":"8898765",
+"amount":"100",
+"message":"Success",
+"user_id":"111",
+"operator_ref_id":"abc234234",
+"type":"CMS",
+"api_agent_id":"ABC116",
+"timestamp":"2025-05-15 13:38:19",
+"client_ref_id":"ABC123",
+"provider_name":"SATYA MICROCAPITAL",
+"provider_id":"123",
+"ca_no":"12441",
+"description":"Test"
+}'
+
+{"status_id":"1","message":"success","client_ref_id":"ABC123"}
+
